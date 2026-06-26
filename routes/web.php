@@ -1,8 +1,11 @@
 <?php
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{Auth, Admin, Owner, Tenant, Agent};
+use App\Http\Controllers\{Auth, Admin, Owner, Tenant, Agent, PublicHomeController};
 
-Route::get('/', fn() => redirect('/owner/login'));
+/* ── PUBLIC HOME / LISTINGS (no authentication, no payment) ── */
+Route::get('/', [PublicHomeController::class, 'index'])->name('home');
+Route::get('/listings/{advertisement}', [PublicHomeController::class, 'show'])->name('listings.show');
+Route::post('/listings/{advertisement}/book', [PublicHomeController::class, 'book'])->name('listings.book');
 
 /* ── ADMIN ── */
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -18,9 +21,28 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put ('settings',      [Admin\SettingsController::class,     'update'])->name('settings.update');
         Route::get ('audit',         [Admin\AuditController::class,        'index'])->name('audit');
         Route::resource('owners',    Admin\OwnerController::class)->only(['index','create','store','destroy'])->names('owners');
+        Route::get ('owners/{owner}/edit',     [Admin\OwnerController::class, 'edit'])->name('owners.edit');
+        Route::put ('owners/{owner}',          [Admin\OwnerController::class, 'update'])->name('owners.update');
         Route::put ('owners/{owner}/suspend',  [Admin\OwnerController::class, 'suspend'])->name('owners.suspend');
         Route::put ('owners/{owner}/activate', [Admin\OwnerController::class, 'activate'])->name('owners.activate');
         Route::resource('plans',     Admin\PlanController::class)->only(['index','store','update'])->names('plans');
+        // Property Agents (brokers / Dulaal)
+        Route::resource('agents',    Admin\AgentController::class)->only(['index','create','store','destroy'])->names('agents');
+        Route::put('agents/{agent}/suspend',  [Admin\AgentController::class, 'suspend'])->name('agents.suspend');
+        Route::put('agents/{agent}/activate', [Admin\AgentController::class, 'activate'])->name('agents.activate');
+        // User Locations
+        Route::get('user-locations', [Admin\UserLocationsController::class, 'index'])->name('user-locations');
+        // Advertisements
+        Route::resource('advertisements', Admin\AdvertisementController::class)->only(['index','create','store','update','destroy'])->names('advertisements');
+        // Billing register for advertisements & reports
+        Route::get   ('ad-billing',             [Admin\AdBillingController::class, 'index'])->name('ad-billing.index');
+        Route::post  ('ad-billing',             [Admin\AdBillingController::class, 'store'])->name('ad-billing.store');
+        Route::put   ('ad-billing/{ad_billing}',[Admin\AdBillingController::class, 'update'])->name('ad-billing.update');
+        Route::delete('ad-billing/{ad_billing}',[Admin\AdBillingController::class, 'destroy'])->name('ad-billing.destroy');
+        // Backup & restore (all tables)
+        Route::get ('backup',        [Admin\BackupController::class, 'index'])->name('backup.index');
+        Route::get ('backup/export', [Admin\BackupController::class, 'export'])->name('backup.export');
+        Route::post('backup/import', [Admin\BackupController::class, 'import'])->name('backup.import');
     });
 });
 
@@ -32,13 +54,27 @@ Route::prefix('owner')->name('owner.')->group(function () {
     Route::middleware(['auth.owner','active.subscription'])->group(function () {
         Route::get ('dashboard', [Owner\DashboardController::class,     'index'])->name('dashboard');
         Route::get ('reports',   [Owner\ReportController::class,        'index'])->name('reports.index');
-        Route::get ('settings',  [Owner\SettingsController::class,      'index'])->name('settings');
-        Route::put ('settings',  [Owner\SettingsController::class,      'update'])->name('settings.update');
+        Route::get ('settings',          [Owner\SettingsController::class, 'index'])->name('settings');
+        Route::put ('settings',          [Owner\SettingsController::class, 'update'])->name('settings.update');
+        Route::post('settings/password', [Owner\SettingsController::class, 'changePassword'])->name('settings.password');
         Route::resource('properties', Owner\PropertyController::class)->only(['index','store','update','destroy'])->names('properties');
         Route::resource('units',      Owner\UnitController::class)->only(['create','store','update','destroy'])->names('units');
         Route::resource('tenants',    Owner\TenantController::class)->only(['index','create','store','show','destroy'])->names('tenants');
         Route::post('tenants/{tenant}/contracts',     [Owner\ContractController::class, 'store'])->name('tenants.contracts.store');
         Route::put ('contracts/{contract}/terminate', [Owner\ContractController::class, 'terminate'])->name('contracts.terminate');
+        Route::post('contracts/{contract}/renew',     [Owner\ContractController::class, 'renew'])->name('contracts.renew');
+        // Tenant documents
+        Route::get   ('documents',                           [Owner\TenantDocumentController::class, 'index'])->name('documents.index');
+        Route::post  ('tenants/{tenant}/documents',          [Owner\TenantDocumentController::class, 'store'])->name('tenants.documents.store');
+        Route::get   ('documents/{document}/download',       [Owner\TenantDocumentController::class, 'download'])->name('documents.download');
+        Route::delete('documents/{document}',                [Owner\TenantDocumentController::class, 'destroy'])->name('documents.destroy');
+        // Advertisements (multiple images)
+        Route::resource('advertisements', Owner\AdvertisementController::class)->only(['index','create','store','update','destroy'])->names('advertisements');
+        Route::put('bookings/{booking}', [Owner\AdvertisementController::class, 'updateBooking'])->name('bookings.update');
+        // Backup & restore
+        Route::get ('backup',        [Owner\BackupController::class, 'index'])->name('backup.index');
+        Route::get ('backup/export', [Owner\BackupController::class, 'export'])->name('backup.export');
+        Route::post('backup/import', [Owner\BackupController::class, 'import'])->name('backup.import');
         // Billing
         Route::prefix('billing')->name('billing.')->group(function () {
             Route::get ('/',                    [Owner\BillingController::class, 'index'])->name('index');
@@ -70,21 +106,6 @@ Route::prefix('owner')->name('owner.')->group(function () {
     });
 });
 
-/* ── AGENT (Broker / Dulaal) ── */
-Route::prefix('agent')->name('agent.')->group(function () {
-    Route::get ('login',  [Auth\AgentAuthController::class, 'showLogin'])->name('login');
-    Route::post('login',  [Auth\AgentAuthController::class, 'login']);
-    Route::match(['get','post'], 'logout', [Auth\AgentAuthController::class, 'logout'])->name('logout');
-    Route::middleware('auth.agent')->group(function () {
-        Route::get ('dashboard', [Agent\DashboardController::class, 'index'])->name('dashboard');
-        Route::get ('profile',   [Agent\ProfileController::class,   'index'])->name('profile');
-        Route::put ('profile',   [Agent\ProfileController::class,   'update'])->name('profile.update');
-        Route::resource('advertisements', Agent\AdvertisementController::class)
-            ->only(['index','create','store','update','destroy'])->names('advertisements');
-        Route::put('bookings/{booking}', [Agent\AdvertisementController::class, 'updateBooking'])->name('bookings.update');
-    });
-});
-
 /* ── TENANT ── */
 Route::prefix('tenant')->name('tenant.')->group(function () {
     Route::get ('login',  [Auth\TenantAuthController::class, 'showLogin'])->name('login');
@@ -102,5 +123,22 @@ Route::prefix('tenant')->name('tenant.')->group(function () {
         Route::post('complaints/{complaint}/reply',[Tenant\ComplaintController::class,'reply'])->name('complaints.reply');
         Route::get ('notifications',         [\App\Http\Controllers\Tenant\NotificationController::class, 'index'])->name('notifications.index');
         Route::put ('notifications/{n}/read',[\App\Http\Controllers\Tenant\NotificationController::class, 'markRead'])->name('notifications.read');
+        Route::post('profile/password',      [Tenant\HomeController::class, 'changePassword'])->name('profile.password');
+    });
+});
+
+/* ── PROPERTY AGENT (broker / Dulaal) ── */
+Route::prefix('agent')->name('agent.')->group(function () {
+    Route::get ('login',  [Auth\AgentAuthController::class, 'showLogin'])->name('login');
+    Route::post('login',  [Auth\AgentAuthController::class, 'login']);
+    Route::match(['get','post'], 'logout', [Auth\AgentAuthController::class, 'logout'])->name('logout');
+    Route::middleware('auth.agent')->group(function () {
+        Route::get ('dashboard',          [Agent\DashboardController::class,     'index'])->name('dashboard');
+        Route::get ('profile',            [Agent\ProfileController::class,       'index'])->name('profile');
+        Route::put ('profile',            [Agent\ProfileController::class,       'update'])->name('profile.update');
+        Route::post('profile/password',   [Agent\ProfileController::class,       'changePassword'])->name('profile.password');
+        Route::resource('advertisements', Agent\AdvertisementController::class)
+            ->only(['index','create','store','update','destroy'])->names('advertisements');
+        Route::put('bookings/{booking}',  [Agent\AdvertisementController::class, 'updateBooking'])->name('bookings.update');
     });
 });
