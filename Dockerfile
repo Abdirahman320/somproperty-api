@@ -14,6 +14,7 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libzip-dev \
+        libonig-dev \
         zip \
         unzip \
         git \
