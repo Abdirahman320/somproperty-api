@@ -18,11 +18,11 @@ RUN printf '<Directory /var/www/html/public>\n\
 # ── System packages ───────────────────────────────────────────────────────────
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y
-RUN apt-get install -y --no-install-recommends libonig-dev libzip-dev zip unzip git
+RUN apt-get install -y --no-install-recommends libonig-dev libzip-dev libpq-dev zip unzip git
 RUN rm -rf /var/lib/apt/lists/*
 
 # ── PHP extensions ────────────────────────────────────────────────────────────
-RUN docker-php-ext-install pdo pdo_mysql mbstring zip bcmath
+RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring zip bcmath
 
 # ── Composer ──────────────────────────────────────────────────────────────────
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
