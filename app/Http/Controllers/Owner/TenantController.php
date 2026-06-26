@@ -29,20 +29,26 @@ class TenantController extends Controller {
     }
 
     public function store(Request $request) {
+        $owner = $request->owner;
+
         $data = $request->validate([
             'full_name'        => 'required|string|max:100',
             'email'            => 'required|email',
             'phone'            => 'nullable|string|max:30',
             'national_id'      => 'nullable|string|max:50',
-            'unit_id'          => 'required|exists:units,id',
+            'unit_id'          => 'required|integer|exists:units,id,owner_id,'.$owner->id,
             'start_date'       => 'required|date',
             'end_date'         => 'required|date|after:start_date',
             'monthly_rent'     => 'required|numeric|min:0',
             'security_deposit' => 'nullable|numeric|min:0',
         ]);
 
-        $owner    = $request->owner;
-        $password = 'password123'; // Fixed default — tenant can change after first login
+        // Pre-check duplicate email for this owner to return a friendly error instead of a 500
+        if (Tenant::where('owner_id', $owner->id)->where('email', $data['email'])->exists()) {
+            return back()->withInput()->withErrors(['email' => 'A tenant with this email already exists.']);
+        }
+
+        $password = 'password123';
 
         $tenant = Tenant::create([
             'owner_id'      => $owner->id,
@@ -65,12 +71,11 @@ class TenantController extends Controller {
             'status'           => 'active',
         ]);
 
-        Unit::find($data['unit_id'])->update(['status' => 'occupied']);
+        Unit::where('id', $data['unit_id'])->update(['status' => 'occupied']);
 
-        // Try to send welcome email, but don't crash if SMTP not configured
         try {
             \Mail::to($tenant->email)->send(new \App\Mail\TenantWelcomeMail($tenant, $password, $owner));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Email failed silently — credentials shown in success banner below
         }
 

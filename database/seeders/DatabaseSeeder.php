@@ -68,15 +68,17 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        /* ── Super Admin ── */
-        DB::table('admin_users')->insertOrIgnore([
-            'name'         => 'Super Admin',
-            'email'        => 'admin@somproperty.com',
-            'password_hash'=> Hash::make('Admin@12345'),
-            'role'         => 'super_admin',
-            'is_active'    => true,
-            'created_at'   => now(), 'updated_at' => now(),
-        ]);
+        /* ── Super Admin — always update so password is known even after DB corruption ── */
+        DB::table('admin_users')->updateOrInsert(
+            ['email' => 'admin@somproperty.com'],
+            [
+                'name'          => 'Super Admin',
+                'password_hash' => Hash::make('Admin@12345'),
+                'role'          => 'super_admin',
+                'is_active'     => true,
+                'updated_at'    => now(),
+            ]
+        );
 
         /* ── Demo Owner ── */
         DB::table('owners')->insertOrIgnore([
