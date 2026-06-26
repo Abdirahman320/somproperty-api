@@ -92,6 +92,23 @@ class DatabaseSeeder extends Seeder
             'created_at'     => now(), 'updated_at' => now(),
         ]);
 
+        /* ── Demo Property Agent (Broker / Dulaal) ── */
+        DB::table('property_agents')->insert([
+            'full_name'              => 'Hassan Broker',
+            'email'                  => 'broker@demo.com',
+            'phone'                  => '+971-50-1112233',
+            'password_hash'          => Hash::make('Broker@12345'),
+            'company_name'           => 'Hassan Real Estate',
+            'city'                   => 'Dubai',
+            'country'                => 'UAE',
+            'subscription_plan'      => 'basic',
+            'subscription_price'     => 15.00,
+            'subscription_starts_at' => now()->toDateString(),
+            'subscription_ends_at'   => now()->addMonth()->toDateString(),
+            'status'                 => 'active',
+            'created_at'             => now(), 'updated_at' => now(),
+        ]);
+
         $this->call([
             DemoPropertySeeder::class,
         ]);

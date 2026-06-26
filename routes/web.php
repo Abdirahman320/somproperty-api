@@ -1,6 +1,6 @@
 <?php
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{Auth, Admin, Owner, Tenant};
+use App\Http\Controllers\{Auth, Admin, Owner, Tenant, Agent};
 
 Route::get('/', fn() => redirect('/owner/login'));
 
@@ -67,6 +67,18 @@ Route::prefix('owner')->name('owner.')->group(function () {
             Route::put ('{complaint}/status',       [Owner\ComplaintController::class, 'updateStatus'])->name('status');
             Route::post('{complaint}/reply',        [Owner\ComplaintController::class, 'reply'])->name('reply');
         });
+    });
+});
+
+/* ── AGENT (Broker / Dulaal) ── */
+Route::prefix('agent')->name('agent.')->group(function () {
+    Route::get ('login',  [Auth\AgentAuthController::class, 'showLogin'])->name('login');
+    Route::post('login',  [Auth\AgentAuthController::class, 'login']);
+    Route::match(['get','post'], 'logout', [Auth\AgentAuthController::class, 'logout'])->name('logout');
+    Route::middleware('auth.agent')->group(function () {
+        Route::get ('dashboard', [Agent\DashboardController::class, 'index'])->name('dashboard');
+        Route::get ('profile',   [Agent\ProfileController::class,   'index'])->name('profile');
+        Route::put ('profile',   [Agent\ProfileController::class,   'update'])->name('profile.update');
     });
 });
 
