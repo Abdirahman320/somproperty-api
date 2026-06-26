@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
         // Tiers are defined by an apartment ceiling. The plan limit check uses
         // "units >= max_apartments", so an owner may hold up to and including
         // max_apartments units — i.e. "less than or equal to N units".
-        DB::table('plans')->insert([
+        DB::table('plans')->insertOrIgnore([
             [
                 'name'           => 'Starter',
                 'slug'           => 'starter',
@@ -69,7 +69,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         /* ── Super Admin ── */
-        DB::table('admin_users')->insert([
+        DB::table('admin_users')->insertOrIgnore([
             'name'         => 'Super Admin',
             'email'        => 'admin@somproperty.com',
             'password_hash'=> Hash::make('Admin@12345'),
@@ -79,7 +79,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         /* ── Demo Owner ── */
-        DB::table('owners')->insert([
+        DB::table('owners')->insertOrIgnore([
             'plan_id'        => 3, // Premium (49 units)
             'company_name'   => 'Green Valley Properties',
             'full_name'      => 'Ahmed Al-Rashid',
@@ -93,7 +93,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         /* ── Demo Property Agent (Broker / Dulaal) ── */
-        DB::table('property_agents')->insert([
+        DB::table('property_agents')->insertOrIgnore([
             'full_name'              => 'Hassan Broker',
             'email'                  => 'broker@demo.com',
             'phone'                  => '+971-50-1112233',
