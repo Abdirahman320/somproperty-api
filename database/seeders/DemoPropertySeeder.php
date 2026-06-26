@@ -14,6 +14,9 @@ class DemoPropertySeeder extends Seeder
 
         if (!$ownerId) return;
 
+        // Skip if demo property already exists (safe to re-run)
+        if (DB::table('properties')->where('owner_id', $ownerId)->exists()) return;
+
         /* ── Demo Property ── */
         $propertyId = DB::table('properties')->insertGetId([
             'owner_id'      => $ownerId,

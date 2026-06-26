@@ -21,12 +21,9 @@ fi
 echo "==> Running migrations..."
 php artisan migrate --force
 
-# Seed only if the admin_users table is empty (first deploy)
-ADMIN_COUNT=$(php artisan tinker --no-interaction --execute="echo \App\Models\AdminUser::count();" 2>/dev/null | tail -1 | tr -d '[:space:]')
-if [ "$ADMIN_COUNT" = "0" ] || [ -z "$ADMIN_COUNT" ]; then
-  echo "==> Seeding initial data (first deploy)..."
-  php artisan db:seed --force
-fi
+# Seed initial data — seeder uses insertOrIgnore so safe to run every time
+echo "==> Seeding initial data (safe, skips existing rows)..."
+php artisan db:seed --force || echo "Seed had warnings (non-fatal)"
 
 # Cache config, routes, views for performance
 echo "==> Caching..."
