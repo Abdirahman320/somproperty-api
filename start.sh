@@ -17,9 +17,16 @@ if [ -z "$APP_KEY" ]; then
   php artisan key:generate --force
 fi
 
-# Run migrations
+# Run migrations — only apply new ones, never wipe existing data
 echo "==> Running migrations..."
-php artisan migrate:fresh --force --seed
+php artisan migrate --force
+
+# Seed only if the admin_users table is empty (first deploy)
+ADMIN_COUNT=$(php artisan tinker --no-interaction --execute="echo \App\Models\AdminUser::count();" 2>/dev/null | tail -1 | tr -d '[:space:]')
+if [ "$ADMIN_COUNT" = "0" ] || [ -z "$ADMIN_COUNT" ]; then
+  echo "==> Seeding initial data (first deploy)..."
+  php artisan db:seed --force
+fi
 
 # Cache config, routes, views for performance
 echo "==> Caching..."
