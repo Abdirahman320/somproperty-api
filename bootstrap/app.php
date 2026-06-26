@@ -10,7 +10,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.admin'           => \App\Http\Middleware\AuthAdmin::class,
             'auth.owner'           => \App\Http\Middleware\AuthOwner::class,
             'auth.tenant'          => \App\Http\Middleware\AuthTenant::class,
-            'auth.agent'           => \App\Http\Middleware\AuthAgent::class,
             'plan.limit'           => \App\Http\Middleware\PlanLimit::class,
             'active.subscription'  => \App\Http\Middleware\ActiveSubscription::class,
         ]);
