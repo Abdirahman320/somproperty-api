@@ -46,8 +46,22 @@
       <a href="{{ route('admin.owners.index') }}" class="nav-item {{ request()->routeIs('admin.owners.*') ? 'active' : '' }}" @if(request()->routeIs('admin.owners.*')) aria-current="page" @endif>
         <span class="nav-icon"><x-icon name="briefcase" /></span> <span class="nav-label">Property Owners</span>
       </a>
+      <a href="{{ route('admin.agents.index') }}" class="nav-item {{ request()->routeIs('admin.agents.*') ? 'active' : '' }}" @if(request()->routeIs('admin.agents.*')) aria-current="page" @endif>
+        <span class="nav-icon"><x-icon name="users" /></span> <span class="nav-label">Property Agents</span>
+      </a>
       <a href="{{ route('admin.subscriptions') }}" class="nav-item {{ request()->routeIs('admin.subscriptions') ? 'active' : '' }}" @if(request()->routeIs('admin.subscriptions')) aria-current="page" @endif>
         <span class="nav-icon"><x-icon name="credit-card" /></span> <span class="nav-label">Subscriptions</span>
+      </a>
+      <a href="{{ route('admin.user-locations') }}" class="nav-item {{ request()->routeIs('admin.user-locations') ? 'active' : '' }}" @if(request()->routeIs('admin.user-locations')) aria-current="page" @endif>
+        <span class="nav-icon"><x-icon name="map-pin" /></span> <span class="nav-label">User Locations</span>
+      </a>
+
+      <div class="nav-section">Marketing</div>
+      <a href="{{ route('admin.advertisements.index') }}" class="nav-item {{ request()->routeIs('admin.advertisements.*') ? 'active' : '' }}" @if(request()->routeIs('admin.advertisements.*')) aria-current="page" @endif>
+        <span class="nav-icon"><x-icon name="megaphone" /></span> <span class="nav-label">Advertisements</span>
+      </a>
+      <a href="{{ route('admin.ad-billing.index') }}" class="nav-item {{ request()->routeIs('admin.ad-billing.*') ? 'active' : '' }}" @if(request()->routeIs('admin.ad-billing.*')) aria-current="page" @endif>
+        <span class="nav-icon"><x-icon name="receipt" /></span> <span class="nav-label">Ad &amp; Report Billing</span>
       </a>
 
       <div class="nav-section">Analytics</div>
@@ -67,6 +81,9 @@
       </a>
       <a href="{{ route('admin.audit') }}" class="nav-item {{ request()->routeIs('admin.audit') ? 'active' : '' }}" @if(request()->routeIs('admin.audit')) aria-current="page" @endif>
         <span class="nav-icon"><x-icon name="search" /></span> <span class="nav-label">Audit Logs</span>
+      </a>
+      <a href="{{ route('admin.backup.index') }}" class="nav-item {{ request()->routeIs('admin.backup.*') ? 'active' : '' }}" @if(request()->routeIs('admin.backup.*')) aria-current="page" @endif>
+        <span class="nav-icon"><x-icon name="download" /></span> <span class="nav-label">Backup &amp; Restore</span>
       </a>
     </nav>
 
@@ -105,6 +122,19 @@
       @endif
       @if(session('error'))
         <div class="alert alert-danger" role="alert"><x-icon name="alert" /><div class="alert-body">{{ session('error') }}</div></div>
+      @endif
+      @if($errors->any())
+        <div class="alert alert-danger" role="alert">
+          <x-icon name="alert" />
+          <div class="alert-body">
+            <b>Please fix the following:</b>
+            <ul>
+              @foreach($errors->all() as $err)
+                <li>{{ $err }}</li>
+              @endforeach
+            </ul>
+          </div>
+        </div>
       @endif
       @if(session('new_creds'))
         @php $nc = session('new_creds'); @endphp

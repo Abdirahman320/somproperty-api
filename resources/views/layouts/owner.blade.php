@@ -51,6 +51,12 @@
       <a href="{{ route('owner.tenants.index') }}" class="nav-item {{ request()->routeIs('owner.tenants.*') ? 'active' : '' }}" @if(request()->routeIs('owner.tenants.*')) aria-current="page" @endif>
         <span class="nav-icon"><x-icon name="users" /></span> <span class="nav-label">Tenants</span>
       </a>
+      <a href="{{ route('owner.advertisements.index') }}" class="nav-item {{ request()->routeIs('owner.advertisements.*') ? 'active' : '' }}" @if(request()->routeIs('owner.advertisements.*')) aria-current="page" @endif>
+        <span class="nav-icon"><x-icon name="megaphone" /></span> <span class="nav-label">Advertisements</span>
+      </a>
+      <a href="{{ route('owner.documents.index') }}" class="nav-item {{ request()->routeIs('owner.documents.*') ? 'active' : '' }}" @if(request()->routeIs('owner.documents.*')) aria-current="page" @endif>
+        <span class="nav-icon"><x-icon name="file-text" /></span> <span class="nav-label">Documents</span>
+      </a>
 
       <div class="nav-section">Billing</div>
       <a href="{{ route('owner.billing.index') }}" class="nav-item {{ request()->routeIs('owner.billing.*') ? 'active' : '' }}" @if(request()->routeIs('owner.billing.*')) aria-current="page" @endif>
@@ -75,6 +81,9 @@
       </a>
 
       <div class="nav-section">Account</div>
+      <a href="{{ route('owner.backup.index') }}" class="nav-item {{ request()->routeIs('owner.backup.*') ? 'active' : '' }}" @if(request()->routeIs('owner.backup.*')) aria-current="page" @endif>
+        <span class="nav-icon"><x-icon name="download" /></span> <span class="nav-label">Backup &amp; Restore</span>
+      </a>
       <a href="{{ route('owner.settings') }}" class="nav-item {{ request()->routeIs('owner.settings') ? 'active' : '' }}" @if(request()->routeIs('owner.settings')) aria-current="page" @endif>
         <span class="nav-icon"><x-icon name="settings" /></span> <span class="nav-label">Settings</span>
       </a>
