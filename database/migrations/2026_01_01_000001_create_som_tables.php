@@ -16,7 +16,7 @@ return new class extends Migration
             $t->string('slug', 50)->unique();
             $t->decimal('price_monthly', 10, 2);
             $t->unsignedInteger('max_apartments');
-            $t->longText('features')->nullable();
+            $t->json('features')->nullable();
             $t->boolean('is_active')->default(true);
             $t->timestamps();
         });
@@ -85,7 +85,7 @@ return new class extends Migration
             $t->unsignedTinyInteger('bathrooms')->default(1);
             $t->decimal('area_sqft', 8, 2)->nullable();
             $t->decimal('monthly_rent', 10, 2);
-            $t->longText('amenities')->nullable();
+            $t->json('amenities')->nullable();
             $t->enum('status', ['vacant','occupied','maintenance','reserved'])->default('vacant');
             $t->text('notes')->nullable();
             $t->timestamps();
@@ -168,7 +168,7 @@ return new class extends Migration
             $t->decimal('electric_rate', 8, 4)->nullable();
             $t->decimal('electric_amount', 10, 2)->default(0);
             $t->decimal('parking_amount', 10, 2)->default(0);
-            $t->longText('other_charges')->nullable();
+            $t->json('other_charges')->nullable();
             $t->decimal('late_fee', 10, 2)->default(0);
             $t->decimal('discount_amount', 10, 2)->default(0);
             $t->decimal('total_amount', 10, 2);
@@ -252,7 +252,7 @@ return new class extends Migration
             $t->enum('priority', ['low','medium','high','emergency'])->default('medium');
             $t->enum('status', ['open','assigned','in_progress','resolved','closed','rejected'])->default('open');
             $t->string('assigned_to', 100)->nullable();
-            $t->longText('photo_paths')->nullable();
+            $t->json('photo_paths')->nullable();
             $t->text('resolution_notes')->nullable();
             $t->timestamp('resolved_at')->nullable();
             $t->unsignedTinyInteger('tenant_rating')->nullable();
@@ -265,7 +265,7 @@ return new class extends Migration
             $t->enum('sender_type', ['owner','tenant']);
             $t->unsignedBigInteger('sender_id');
             $t->text('message');
-            $t->longText('attachments')->nullable();
+            $t->json('attachments')->nullable();
             $t->timestamps();
         });
 
@@ -314,7 +314,7 @@ return new class extends Migration
             $t->date('scheduled_date')->nullable();
             $t->timestamp('resolved_at')->nullable();
             $t->text('resolution_notes')->nullable();
-            $t->longText('photo_paths')->nullable();
+            $t->json('photo_paths')->nullable();
             $t->timestamps();
         });
 
@@ -327,8 +327,8 @@ return new class extends Migration
             $t->string('action', 100);
             $t->string('resource_type', 50)->nullable();
             $t->unsignedBigInteger('resource_id')->nullable();
-            $t->longText('old_values')->nullable();
-            $t->longText('new_values')->nullable();
+            $t->json('old_values')->nullable();
+            $t->json('new_values')->nullable();
             $t->string('ip_address', 45)->nullable();
             $t->string('user_agent')->nullable();
             $t->timestamp('created_at')->useCurrent();

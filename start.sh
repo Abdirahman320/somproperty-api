@@ -19,7 +19,7 @@ fi
 
 # Run migrations
 echo "==> Running migrations..."
-php artisan migrate --force
+php artisan migrate:fresh --force
 
 # Cache config, routes, views for performance
 echo "==> Caching..."
