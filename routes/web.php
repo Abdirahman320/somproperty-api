@@ -79,6 +79,9 @@ Route::prefix('agent')->name('agent.')->group(function () {
         Route::get ('dashboard', [Agent\DashboardController::class, 'index'])->name('dashboard');
         Route::get ('profile',   [Agent\ProfileController::class,   'index'])->name('profile');
         Route::put ('profile',   [Agent\ProfileController::class,   'update'])->name('profile.update');
+        Route::resource('advertisements', Agent\AdvertisementController::class)
+            ->only(['index','create','store','update','destroy'])->names('advertisements');
+        Route::put('bookings/{booking}', [Agent\AdvertisementController::class, 'updateBooking'])->name('bookings.update');
     });
 });
 
