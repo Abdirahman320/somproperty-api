@@ -2,6 +2,7 @@
 set -e
 
 echo "==> Setting up Laravel..."
+echo "DEBUG: DB_HOST=${DB_HOST} APP_KEY_SET=${APP_KEY:+yes}"
 
 # Create .env if missing — artisan needs a file to write APP_KEY into
 if [ ! -f /var/www/html/.env ]; then
