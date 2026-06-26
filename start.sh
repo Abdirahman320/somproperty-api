@@ -3,11 +3,16 @@ set -e
 
 echo "==> Setting up Laravel..."
 
+# Create .env if missing — artisan needs a file to write APP_KEY into
+if [ ! -f /var/www/html/.env ]; then
+  touch /var/www/html/.env
+fi
+
 # Regenerate package manifest (removes dev-only providers like Sail)
 php artisan package:discover --ansi
 
-# Generate app key if not set
-if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "base64:GENERATE_WITH_php_artisan_key:generate" ]; then
+# Generate app key only if not already provided by the host environment
+if [ -z "$APP_KEY" ]; then
   php artisan key:generate --force
 fi
 
@@ -16,7 +21,7 @@ echo "==> Running migrations..."
 php artisan migrate --force
 
 # Cache config, routes, views for performance
-echo "==> Caching config..."
+echo "==> Caching..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
