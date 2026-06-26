@@ -65,6 +65,17 @@ class DemoPropertySeeder extends Seeder
             'created_at'    => now(), 'updated_at' => now(),
         ]);
 
+        /* ── Demo Agent ── */
+        DB::table('agents')->insert([
+            'owner_id'      => $ownerId,
+            'name'          => 'Mohammed Al-Rashid',
+            'email'         => 'agent@demo.com',
+            'phone'         => '+971-50-9876543',
+            'password_hash' => Hash::make('Agent@12345'),
+            'is_active'     => true,
+            'created_at'    => now(), 'updated_at' => now(),
+        ]);
+
         /* ── Demo Contracts ── */
         DB::table('contracts')->insert([
             [

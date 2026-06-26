@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
-use App\Models\{Owner, Tenant};
+use App\Models\{Owner, Tenant, Agent};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -100,7 +100,7 @@ class AuthController extends Controller
         ]);
     }
 
-    /** Agent login — uses owner credentials, returns agent role */
+    /** Agent login — agents have their own credentials */
     public function agentLogin(Request $request)
     {
         $request->validate([
@@ -108,24 +108,27 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $owner = Owner::where('email', $request->email)
-                      ->where('status', 'active')
+        $agent = Agent::where('email', $request->email)
+                      ->where('is_active', true)
+                      ->with('owner')
                       ->first();
 
-        if (!$owner || !Hash::check($request->password, $owner->password_hash)) {
+        if (!$agent || !Hash::check($request->password, $agent->password_hash)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        $token = $owner->createToken('mobile-agent')->plainTextToken;
+        $token = $agent->createToken('mobile-agent')->plainTextToken;
 
         return response()->json([
             'token' => $token,
             'role'  => 'agent',
             'user'  => [
-                'id'           => $owner->id,
-                'full_name'    => $owner->full_name,
-                'email'        => $owner->email,
-                'company_name' => $owner->company_name,
+                'id'           => $agent->id,
+                'full_name'    => $agent->name,
+                'email'        => $agent->email,
+                'phone'        => $agent->phone,
+                'owner_id'     => $agent->owner_id,
+                'company_name' => $agent->owner?->company_name,
             ],
         ]);
     }
