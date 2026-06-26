@@ -10,13 +10,16 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
     && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' \
     /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Install system dependencies + PHP extensions
-RUN apt-get update && apt-get install -y \
-    libpng-dev libjpeg-dev libfreetype6-dev \
-    libzip-dev zip unzip git curl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql gd mbstring zip bcmath \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install PHP extensions
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libzip-dev \
+        zip \
+        unzip \
+        git \
+    && docker-php-ext-install pdo pdo_mysql zip bcmath mbstring \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -31,15 +34,12 @@ RUN printf '<Directory /var/www/html/public>\n\
 
 WORKDIR /var/www/html
 
-# Copy and install dependencies first (layer cache)
+# Copy and install dependencies
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Copy rest of app
 COPY . .
-
-# Run composer scripts now that full app is present
-RUN composer run-script post-install-cmd --no-interaction || true
 
 # Storage permissions
 RUN mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
