@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.agent'           => \App\Http\Middleware\AuthAgent::class,
             'plan.limit'           => \App\Http\Middleware\PlanLimit::class,
             'active.subscription'  => \App\Http\Middleware\ActiveSubscription::class,
+            'token.role'           => \App\Http\Middleware\EnsureTokenRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
