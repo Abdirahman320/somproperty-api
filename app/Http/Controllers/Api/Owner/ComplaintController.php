@@ -9,7 +9,7 @@ class ComplaintController extends Controller
     public function index(Request $request)
     {
         $owner = $request->user();
-        $query = Complaint::where('owner_id', $owner->id)->with(['tenant','unit']);
+        $query = Complaint::where('owner_id', $owner->id)->with(['tenant','unit.property']);
 
         if ($request->has('status'))   $query->where('status',   $request->status);
         if ($request->has('priority')) $query->where('priority', $request->priority);
@@ -27,8 +27,9 @@ class ComplaintController extends Controller
             'assigned_to'   => $c->assigned_to,
             'resolved_at'   => $c->resolved_at,
             'created_at'    => $c->created_at,
-            'tenant'  => ['id'=>$c->tenant->id,'full_name'=>$c->tenant->full_name],
-            'unit'    => ['unit_number'=>$c->unit->unit_number],
+            'property_name' => $c->unit?->property?->name ?? '',
+            'tenant'  => ['id'=>$c->tenant?->id,'full_name'=>$c->tenant?->full_name ?? ''],
+            'unit'    => ['unit_number'=>$c->unit?->unit_number ?? ''],
         ]);
 
         return response()->json(['data' => $data, 'total' => $complaints->total()]);

@@ -12,12 +12,15 @@ class DashboardController extends Controller
         $owner = $request->user();   // Sanctum resolves owner
         $month = Carbon::now()->startOfMonth();
 
-        $totalUnits   = $owner->units()->whereNotIn('status',['disposed'])->count();
-        $occupied     = $owner->units()->where('status','occupied')->count();
-        $rentCollected= TenantBill::where('owner_id',$owner->id)
+        $totalUnits     = $owner->units()->whereNotIn('status',['disposed'])->count();
+        $occupied       = $owner->units()->where('status','occupied')->count();
+        $vacant         = $owner->units()->where('status','vacant')->count();
+        $totalProperties= $owner->properties()->count();
+        $totalTenants   = \App\Models\Tenant::where('owner_id',$owner->id)->where('status','active')->count();
+        $rentCollected  = TenantBill::where('owner_id',$owner->id)
             ->where('billing_month', $month->toDateString())
             ->sum('amount_paid');
-        $overdueCount = TenantBill::where('owner_id',$owner->id)
+        $overdueCount   = TenantBill::where('owner_id',$owner->id)
             ->where('status','overdue')->count();
         $openComplaints = Complaint::where('owner_id',$owner->id)
             ->where('status','open')->count();
@@ -44,13 +47,16 @@ class DashboardController extends Controller
 
         return response()->json([
             'stats' => [
-                'total_units'    => $totalUnits,
-                'plan_limit'     => $owner->max_apartments,
-                'occupied'       => $occupied,
-                'occupancy_rate' => $totalUnits > 0 ? round($occupied/$totalUnits*100,1) : 0,
-                'rent_collected' => (float) $rentCollected,
-                'overdue_count'  => $overdueCount,
-                'open_complaints'=> $openComplaints,
+                'total_units'      => $totalUnits,
+                'total_properties' => $totalProperties,
+                'total_tenants'    => $totalTenants,
+                'vacant'           => $vacant,
+                'plan_limit'       => $owner->max_apartments,
+                'occupied'         => $occupied,
+                'occupancy_rate'   => $totalUnits > 0 ? round($occupied/$totalUnits*100,1) : 0,
+                'rent_collected'   => (float) $rentCollected,
+                'overdue_count'    => $overdueCount,
+                'open_complaints'  => $openComplaints,
             ],
             'chart'           => $chart,
             'recent_activity' => $activity,

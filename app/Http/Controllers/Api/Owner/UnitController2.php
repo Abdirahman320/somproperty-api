@@ -11,8 +11,16 @@ class UnitController2 extends Controller {
         return response()->json(['success'=>true,'data'=>$this->fmt($u)]);
     }
     public function store(Request $r){
-        $data=$r->validate(['property_id'=>'required|exists:properties,id','unit_number'=>'required|string|max:20','floor_number'=>'nullable|integer','bedrooms'=>'nullable|string|max:20','bathrooms'=>'nullable|integer','area_sqft'=>'nullable|numeric|min:0','monthly_rent'=>'required|numeric|min:0','status'=>'nullable|in:vacant,occupied,maintenance,reserved']);
-        $u=Unit::create(['owner_id'=>$r->user()->id,...$data]);
+        $owner=$r->user();
+        $data=$r->validate(['property_id'=>'required|exists:properties,id,owner_id,'.$owner->id,'unit_number'=>'required|string|max:20','floor_number'=>'nullable|integer','bedrooms'=>'nullable|string|max:20','bathrooms'=>'nullable|integer','area_sqft'=>'nullable|numeric|min:0','monthly_rent'=>'required|numeric|min:0','status'=>'nullable|in:vacant,occupied,maintenance,reserved']);
+        try {
+            $u=Unit::create(['owner_id'=>$owner->id,...$data]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->errorInfo[1] === 1062) {
+                return response()->json(['message'=>'A unit with number "'.$data['unit_number'].'" already exists in this property.'],422);
+            }
+            throw $e;
+        }
         return response()->json(['success'=>true,'data'=>$this->fmt($u)],201);
     }
     public function update(Request $r,$id){

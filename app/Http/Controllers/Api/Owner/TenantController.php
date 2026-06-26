@@ -56,13 +56,18 @@ class TenantController extends Controller
             'email'            => 'required|email',
             'phone'            => 'nullable|string|max:30',
             'national_id'      => 'nullable|string|max:50',
-            'unit_id'          => 'required|integer|exists:units,id',
+            'unit_id'          => 'required|integer|exists:units,id,owner_id,'.$owner->id,
             'start_date'       => 'required|date',
             'end_date'         => 'required|date|after:start_date',
             'monthly_rent'     => 'required|numeric|min:0',
             'security_deposit' => 'nullable|numeric|min:0',
             'payment_due_day'  => 'nullable|integer|min:1|max:28',
         ]);
+
+        // Check email uniqueness for this owner
+        if (Tenant::where('owner_id', $owner->id)->where('email', $data['email'])->exists()) {
+            return response()->json(['message' => 'A tenant with this email already exists.'], 422);
+        }
 
         $password = Str::random(10);
         $tenant   = Tenant::create([
@@ -87,12 +92,12 @@ class TenantController extends Controller
             'status'           => 'active',
         ]);
 
-        Unit::find($data['unit_id'])->update(['status' => 'occupied']);
+        Unit::where('id', $data['unit_id'])->update(['status' => 'occupied']);
 
         // Send welcome email with temp password
         try {
             \Mail::to($tenant->email)->queue(new \App\Mail\TenantWelcomeMail($tenant, $password, $owner));
-        } catch (\Exception $e) {}
+        } catch (\Throwable $e) {}
 
         return response()->json([
             'message'  => 'Tenant created and welcome email sent.',
